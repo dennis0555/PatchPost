@@ -1,0 +1,15 @@
+# Geheimnisse – niemals hochladen!
+.env
+.env.*
+!.env.example
+
+# Laufzeitdaten
+*.db
+*.db-journal
+*.lock
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
