@@ -566,7 +566,11 @@ class PatchCommands(app_commands.Group):
     async def test(self, interaction: discord.Interaction, abo: int) -> None:
         sub = self.bot.db.get_subscription(interaction.guild_id, abo)
         if not sub:
-            await interaction.response.send_message(f"Kein Abo mit ID `{abo}` gefunden.", ephemeral=True)
+            await interaction.response.send_message(
+                f"Kein Abo mit ID `{abo}` gefunden. Testen kann man nur bestehende Abos – "
+                "leg es zuerst an (z. B. `/patch riot`) und schau mit `/patch liste` nach.",
+                ephemeral=True,
+            )
             return
         await interaction.response.defer(ephemeral=True, thinking=True)
 
@@ -575,8 +579,12 @@ class PatchCommands(app_commands.Group):
         except SourceError as e:
             await interaction.followup.send(f"❌ {e}", ephemeral=True)
             return
+        if sub.patch_only:
+            # Genauso filtern wie beim echten Posten
+            items = [i for i in items if i.is_patch]
         if not items:
-            await interaction.followup.send("Die Quelle hat aktuell keine Meldungen.", ephemeral=True)
+            hint = " (mit Filter „nur Patches“)" if sub.patch_only else ""
+            await interaction.followup.send(f"Die Quelle hat aktuell keine Meldungen{hint}.", ephemeral=True)
             return
 
         ok = await self.bot.post(sub, max(items, key=lambda i: i.published))
